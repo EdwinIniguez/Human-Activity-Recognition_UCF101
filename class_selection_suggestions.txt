@@ -1,0 +1,3 @@
+Top-5 by dataset frequency: [23, 91, 60, 41, 58]
+Top-5 by validation accuracy (val_count>=20): [36, 46, 47, 62, 69]
+5 balanced candidates: [36, 98, 100, 8, 19]
