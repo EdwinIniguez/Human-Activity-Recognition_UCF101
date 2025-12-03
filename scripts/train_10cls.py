@@ -23,10 +23,16 @@ from torch.utils.data import Dataset, DataLoader
 # running the script directly from PowerShell/conda environments.
 import sys
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
 
-# Import model from project
-from Models.lstm_model import SkeletonLSTM
+# Try package import first (when project installed or src in PYTHONPATH)
+try:
+    from har.Models.lstm_model import SkeletonLSTM
+except Exception:
+    # Fall back: add src/ to sys.path (common layout: repo/src/har/...)
+    SRC = ROOT / 'src'
+    if str(SRC) not in sys.path:
+        sys.path.insert(0, str(SRC))
+    from har.Models.lstm_model import SkeletonLSTM
 
 
 class NormalizeKeypoints:

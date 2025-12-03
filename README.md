@@ -42,50 +42,62 @@ jupyter
 tqdm
 ```
 
-Cómo preparar el entorno (PowerShell)
------------------------------------
+Resumen
+----
+Este repositorio contiene código y notebooks para trabajar con esqueletos 2D extraídos del dataset UCF101. Está orientado a experimentación: procesamiento de anotaciones, construcción de datasets y collates, un baseline LSTM y scripts reproducibles para entrenar e inferir.
+
+Estructura (resumen)
+----
+- `src/` — código fuente (package). Busca `src/har/...` si seguiste la reorganización.
+- `scripts/` — scripts CLI: `train_10cls.py`, `infer_10cls.py`.
+- `data/raw/` — datos originales (no versionar archivos pesados aquí).
+- `data/processed/` — pickles y datos preparados (` ucf101_2d_10cls.pkl`).
+- `notebooks/` y `Notebooks/` — notebooks de experimentación.
+- `artifacts/` — checkpoints, historiales y métricas generadas.
+- `requirements.txt` — dependencias Python.
+
+Quick start (PowerShell)
+----
+1. Crear y activar entorno:
 ```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-# Luego arrancar Jupyter
-jupyter notebook
+conda create -n har python=3.10 -y
+conda activate har
 ```
 
-Uso básico
-----------
-- Abrir y ejecutar `dataExperiments.ipynb` (celdas ordenadas para: cargar datos → construir `df_ann` → crear `Dataset` y `DataLoader` → entrenar/evaluar modelo).
-- `Notebooks/Human_Activity_Recognition.ipynb` contiene experimentos adicionales y visualizaciones.
+2. Instalar PyTorch (elige la variante para CPU o GPU en https://pytorch.org/get-started/locally/). Ejemplo CPU:
+```powershell
+pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+```
 
-Artefactos y registros
-----------------------
-- Tras ejecutar las celdas de entrenamiento se generan:
-	- `*.pt` : checkpoints de PyTorch.
-	- `training_history.csv` : pérdidas/precisión por época.
-	- `annotations_summary.csv` : versión tabular del pickle para inspección rápida.
+3. Instalar el resto de dependencias:
+```powershell
+pip install -r requirements.txt
+```
 
-Recomendaciones prácticas
--------------------------
-- Si vas a ejecutar múltiples experimentos, preprocesa y guarda muestras normalizadas en disco para acelerar iteraciones.
-- Ajusta `batch_size` según tu GPU (p. ej. GTX 1650 → `batch_size` 8–16). Habilita AMP (mixed precision) para ahorrar memoria si el training loop lo soporta.
-- Usa `num_workers=2..4` en `DataLoader` en Windows para no saturar I/O.
+4. (Opcional) Instalar el paquete en editable para imports tipo `from har...`:
+```powershell
+pip install -e .
+```
 
-Próximos pasos sugeridos (ya planeados)
--------------------------------------
-- Filtrar y remapear el conjunto a 10 clases seleccionadas y volver a entrenar (reduce tiempo y facilita tuning).
-- Ejecutar comparativas con regularización (dropout, weight decay) y augmentaciones temporales (random crop/jitter/flip) en el subconjunto de 10 clases.
-- Guardar métricas por clase (`per_class_metrics.csv`) y matriz de confusión para seleccionar clases donde la regularización aporte mayor mejora.
+Entrenar (ejemplo)
+----
+Entrena el modelo en la subset de 10 clases:
+```powershell
+& C:/Users/edosa/anaconda3/envs/nlp/python.exe scripts\train_10cls.py --pickle data\processed\ucf101_2d_10cls.pkl --epochs 20 --batch_size 8 --num_workers 2 --save_dir artifacts
+```
 
-Contacto y seguimiento
-----------------------
-Si quieres, puedo:
-- filtrar el dataset a las 10 clases que prefieras y remapear etiquetas (0..9) en `dataExperiments.ipynb`.
-- lanzar un experimento controlado con `SkeletonLSTM` + dropout + weight decay y guardar resultados.
+Inferencia (ejemplo)
+----
+Genera predicciones y métricas sobre la partición de validación:
+```powershell
+& C:/Users/edosa/anaconda3/envs/nlp/python.exe scripts\infer_10cls.py --checkpoint artifacts\best_10cls.pt --pickle data\processed\ucf101_2d_10cls.pkl --out_dir inference_outputs --batch_size 32 --in_channels 4
+```
 
-Licencia y notas
------------------
-Este repositorio es una base educativa para experimentación con UCF101 y esqueletos 2D; respeta las licencias del dataset original y de las librerías usadas.
+Salida relevante
+----
+- `artifacts/` → checkpoints y `training_history_10cls.csv`.
+- `inference_outputs/` → `predictions.csv`, `per_class_metrics_inference.csv`, `confusion_matrix.png`.
+
 
 ---
-Actualizado automáticamente para reflejar el pipeline y próximos pasos de experimentación.
+Actualizado el README con instrucciones de uso y ejemplos de comandos.

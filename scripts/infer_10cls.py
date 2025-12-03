@@ -20,12 +20,15 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import precision_recall_fscore_support, confusion_matrix
 
-# Add project root to path so `Models` imports resolve when run from repo root
+# Try package import first (when project installed or src in PYTHONPATH)
 ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-
-from Models.lstm_model import SkeletonLSTM
+try:
+    from har.Models.lstm_model import SkeletonLSTM
+except Exception:
+    SRC = ROOT / 'src'
+    if str(SRC) not in sys.path:
+        sys.path.insert(0, str(SRC))
+    from har.Models.lstm_model import SkeletonLSTM
 
 
 def pad_sequence_kp_right(kps):

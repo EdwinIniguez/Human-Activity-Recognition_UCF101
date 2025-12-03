@@ -1,0 +1,29 @@
+# Recommended requirements for Human-Activity-Recognition_UCF101
+# NOTE: Install `torch` separately using the command recommended at https://pytorch.org/get-started/locally/
+# If you want a quick CPU-only install of PyTorch you can run:
+#   pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+
+# Core deep learning
+torch>=2.0.0,<3.0.0
+torchvision>=0.15.0,<1.0.0
+
+# Numerical & data
+numpy>=1.24
+pandas>=2.0
+scipy>=1.10
+
+# ML + metrics
+scikit-learn>=1.2
+
+# Visualization & notebooks
+matplotlib>=3.6
+seaborn>=0.12
+jupyter>=1.0
+ipykernel
+
+# Utilities
+tqdm>=4.65
+opencv-python>=4.7
+Pillow>=9.0
+pyyaml>=6.0
+typing-extensions
