@@ -1,4 +1,4 @@
-REPORT — Human Activity Recognition (UCF101, 2D skeletons)
+ REPORT — Human Activity Recognition (UCF101, 2D skeletons)
 ========================================
 
 Última actualización: 2025-12-03
@@ -92,38 +92,3 @@ Notas sobre resultados
 - `artifacts/best_10cls.pt` — checkpoint guardado durante los entrenamientos principales.
 - `artifacts_test_train/training_history_10cls.csv` — historial de la corrida de prueba.
 - `inference_outputs_test3/predictions.csv`, `per_class_metrics_inference.csv`, `confusion_matrix.png` — salidas de la inferencia rápida.
-
-8. Reproducibilidad y pasos sugeridos
-------------------------------------
-Recomendación para reproducir exacto:
-1. Activar entorno y asegurarse de tener las dependencias (ver `requirements.txt`).
-2. Ejecutar entrenamiento corto para validar (comando en sección 5).
-3. Ejecutar inferencia apuntando al checkpoint resultante.
-
-Buenas prácticas para reproducibilidad
-- Grabar en cada checkpoint: `{'model_state':..., 'in_channels': <2|4>, 'label_map': {...}, 'args': {...}}`.
-- Mantener un directorio `experiments/<name>/artifacts/` por cada experimento para trazabilidad.
-- Si usas GPU, anotar versión de CUDA y torch en `training_history` o `README`.
-
-9. Problemas conocidos
-----------------------
-- AMP: solo se activa si CUDA está disponible. En entornos CPU el flag `--use_amp` no hace nada.
-- Rutas: tras reorganizar algunos archivos, los scripts admiten ambos modos de import (paquete `har` o fallback añadiendo `src/` a `sys.path`). Recomiendo instalar el paquete editably (`pip install -e .`) para eliminar el fallback.
-- Windows: `num_workers>0` puede comportarse distinto; usamos `num_workers=0` en ejemplos para estabilidad.
-
-10. Próximos pasos recomendados
--------------------------------
-- Añadir metadata al guardado de checkpoints (si quieres, lo implemento en `scripts/train_10cls.py`).
-- Ejecutar un entrenamiento completo en GPU (si dispones de ella) con AMP y un scheduler.
-- Implementar pruebas unitarias para el `Dataset` y una pasada del modelo en `tests/`.
-- Preparar un `environment.yml` para conda para compartir el entorno exacto.
-
-Contacto / notas finales
-------------------------
-Si necesitas que complete alguno de los siguientes (puedo hacerlo):
-- agregar metadata a los checkpoints,
-- mover pickles a `data/processed/` y actualizar rutas,
-- generar `environment.yml` o `pyproject.toml`.
-
----
-Fin del reporte.
