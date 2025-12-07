@@ -1,12 +1,30 @@
 #!/usr/bin/env python3
-"""
-CLI training script for the 10-class UCF101 skeleton subset.
-Usage example (PowerShell):
-  & C:/Users/edosa/anaconda3/envs/nlp/python.exe scripts\train_10cls.py --epochs 30 --batch_size 8 --lr 1e-3 --num_workers 0
-
-Supports optional AMP (use --use_amp) but will fall back to CPU if CUDA not available.
-Saves: best_10cls.pt (best val acc), final checkpoint, training_history_10cls.csv
-"""
+# ==============================================================================
+# SCRIPT: train_10cls.py — CLI Training for 10-Class UCF101 Skeleton Subset
+# ==============================================================================
+#
+# PURPOSE:
+#   Reproducible training pipeline for skeleton-based activity recognition
+#   on the top-10 most recognizable UCF101 classes (selected by F1-score).
+#
+# USAGE (PowerShell):
+#   & C:/Users/edosa/anaconda3/envs/nlp/python.exe scripts\train_10cls.py \
+#     --epochs 30 --batch_size 8 --lr 1e-3 --num_workers 0
+#
+# FEATURES:
+#   - Stratified train/val split (80/20).
+#   - Class weighting (inverse frequency) for balanced learning.
+#   - Optional AMP (Automatic Mixed Precision) for faster training.
+#   - Right-padding strategy (pad at beginning for LSTM final-step usage).
+#   - Best checkpoint selection + final checkpoint saving.
+#   - Training history saved to CSV for analysis.
+#
+# OUTPUTS:
+#   - best_10cls.pt           : Model with highest validation accuracy.
+#   - lstm_10cls_cli_final.pt : Final model (last epoch).
+#   - training_history_10cls.csv : Loss & accuracy per epoch.
+#
+# ==============================================================================
 
 import argparse
 from pathlib import Path
@@ -18,13 +36,19 @@ import pandas as pd
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
-
-# Ensure project root is on sys.path so imports like `Models.*` work when
-# running the script directly from PowerShell/conda environments.
 import sys
+
+# ==============================================================================
+# SECTION: Import Resolution (Package vs. Fallback)
+# ==============================================================================
+# Ensures imports work whether script is run directly or from installed package.
+# Priority:
+#   1. Try: from har.Models.lstm_model import SkeletonLSTM
+#   2. Fallback: add repo/src/ to sys.path and retry
+# This handles various development/deployment scenarios.
+
 ROOT = Path(__file__).resolve().parents[1]
 
-# Try package import first (when project installed or src in PYTHONPATH)
 try:
     from har.Models.lstm_model import SkeletonLSTM
 except Exception:

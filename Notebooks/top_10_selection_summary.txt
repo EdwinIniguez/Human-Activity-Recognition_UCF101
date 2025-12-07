@@ -1,0 +1,13 @@
+=== Top-10 Class Selection Summary ===
+
+Selected classes:
+  0: 36                             (F1=0.9020, Support=26)
+  1: 46                             (F1=0.8163, Support=25)
+  2: 71                             (F1=0.8108, Support=20)
+  3: 11                             (F1=0.7419, Support=30)
+  4: 62                             (F1=0.7308, Support=32)
+  5: 47                             (F1=0.7119, Support=29)
+  6: 49                             (F1=0.6897, Support=25)
+  7: 63                             (F1=0.6792, Support=21)
+  8: 3                              (F1=0.6531, Support=27)
+  9: 82                             (F1=0.6486, Support=22)

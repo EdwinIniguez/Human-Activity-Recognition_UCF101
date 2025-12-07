@@ -1,0 +1,81 @@
+
+DATASET OVERVIEW:
+  Total videos: 13320
+  Number of classes: 101
+  Train/Val split: 70/30
+
+PREPROCESSING:
+  - Joints per frame: 17 (COCO skeleton)
+  - Input channels: 2 (x, y normalized to [-1, 1])
+  - Padding strategy: right-padding (pad at beginning for LSTM)
+  - Max sequence length: N/A
+
+MODEL:
+  - Architecture: SkeletonLSTM (LSTM + Dense classification head)
+  - Layers: 1 LSTM layer + 2 Dense layers
+  - Hidden size: 256
+  - Dropout: 0.5 (training), 0.0 (inference)
+
+TRAINING RESULTS:
+  - Best validation accuracy: 0.3821 (from history)
+  - Final validation accuracy: 0.3821
+  - Best F1-score (top-10): 0.7384
+
+ARTIFACTS SAVED:
+  - Model checkpoint: lstm_trained.pt
+  - Training history: training_history.csv
+  - Per-class metrics: robust_per_class_metrics.csv
+  - Evaluation report: robust_evaluation_report.txt
+  - Top-10 configuration: top_10_classes.json, top_10_classes.pkl
+  - Selection summary: top_10_selection_summary.txt
+
+PERFORMANCE BY CLASS (Top-5):
+  1. 36                             — F1=0.9020, Precision=0.9200, Recall=0.8846
+  2. 46                             — F1=0.8163, Precision=0.8333, Recall=0.8000
+  3. 71                             — F1=0.8108, Precision=0.8824, Recall=0.7500
+  4. 11                             — F1=0.7419, Precision=0.7188, Recall=0.7667
+  5. 62                             — F1=0.7308, Precision=0.9500, Recall=0.5938
+
+CHALLENGES IDENTIFIED:
+  1. 7                              — F1=0.0690 (low support or confusable motion)
+  2. 52                             — F1=0.0339 (low support or confusable motion)
+  3. 10                             — F1=0.0000 (low support or confusable motion)
+
+NEXT STEPS (RECOMMENDATIONS):
+
+  1. FINE-TUNE TOP-10 MODEL:
+     - Train exclusively on top-10 classes for better convergence.
+     - Use balanced sampling to handle class imbalance.
+     - Implement learning rate scheduling (ReduceLROnPlateau).
+
+  2. AUGMENTATION STRATEGIES:
+     - Add temporal augmentation (random frame sampling, speed jittering).
+     - Spatial augmentation (random rotation, scaling of keypoints).
+     - Try mixup or other contrastive techniques.
+
+  3. ARCHITECTURE IMPROVEMENTS:
+     - Experiment with multi-layer LSTM (2-3 layers).
+     - Add skip connections or attention mechanisms.
+     - Try GRU instead of LSTM for faster training.
+     - Consider 2D CNN + LSTM fusion (if we add RGB frames later).
+
+  4. DATA IMPROVEMENTS:
+     - Collect more samples for poorly-performing classes.
+     - Analyze confusion patterns: classes A↔B might need joint-specific attention.
+     - Inspect raw annotations for labeling errors.
+
+  5. EVALUATION:
+     - Cross-validate on different splits (k-fold).
+     - Test on separate test set (currently using val set).
+     - Generate ROC curves and precision-recall curves per class.
+
+  6. DEPLOYMENT:
+     - Convert model to ONNX for inference in production.
+     - Create REST API for real-time activity recognition.
+     - Benchmark latency and memory footprint.
+
+REFERENCES & REPRODUCIBILITY:
+  - This notebook is fully reproducible: all seeds are fixed, data is deterministic.
+  - Artifacts are versioned and stored locally.
+  - See REPORT.md and README.md for detailed methodology.
+  - To reproduce: just run all cells top-to-bottom without modifications.
