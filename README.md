@@ -330,9 +330,58 @@ Clase 3: Recall 0.833, Precision 0.833
 └─ Usar para producción (sin necesidad de threshold)
 ```
 
+# Portafolio de Análisis
+## Indicador: Procesa grandes volúmenes de datos de manera eficiente
+**Evidencia:**
+- `scripts/train_10cls.py`: carga pickle de secuencias y usa `DataLoader` con `pin_memory=True`, `num_workers` configurables y `collate_fn` para batches de longitud variable (eficiencia en I/O y CPU-GPU pipeline).
+- `Notebooks/dataExperiments_10cls.ipynb` (celdas iniciales): preconversión a NumPy y right-padding para acelerar `__getitem__` (~10x vs. on-the-fly).
+- `docs/REPORT.md` (sección de pipeline): describe batching y aceleración con AMP (Automatic Mixed Precision).
+
+**Cómo verificar:**
+- Ejecutar `python scripts/train_10cls.py --pickle src/har/data/Dataset/ucf101_2d_10cls.pkl --epochs 1 --batch_size 32 --num_workers 4` y observar tiempos por iteración.
+- Revisar en el notebook la celda de tiempos de acceso tras la preconversión (más rápida que lectura directa).
+
 ---
 
-## Estructura del Repositorio
+## Indicador: Genera tableros útiles y correctos que apoyan la toma de decisiones
+**Evidencia:**
+- `artifacts/per_class_metrics_CE_10cls.csv`: métricas por clase (precision/recall/F1) para priorizar mejoras.
+- `artifacts/confusion_matrix_10cls.png`: matriz de confusión para decidir en qué clases ajustar datos o pesos.
+- `Notebooks/dataExperiments_10cls.ipynb` (celdas de visualización): gráficos de curvas de pérdida y accuracy.
+- `docs/REPORT.md` (sección de resultados): tablas resumidas de métricas y hallazgos clave.
+
+**Cómo verificar:**
+- Abrir `artifacts/confusion_matrix_10cls.png` y `per_class_metrics_CE_10cls.csv`.
+- En el notebook, ejecutar las celdas de visualización de métricas (curvas Train/Val, matriz de confusión).
+
+---
+
+## Indicador: Mide correctamente el desempeño del modelo y sus métricas son correctas
+**Evidencia:**
+- `scripts/train_10cls.py`: cálculo de `loss`, `accuracy`, métricas macro y per-class; guarda `training_history_10cls.csv`.
+- `scripts/infer_10cls.py`: genera `predictions.csv`, `per_class_metrics.csv`, `confusion_matrix.png` con el checkpoint final.
+- `docs/REPORT.md` (sección de evaluación): reporte de accuracy global 62.9%, macro F1 ~0.61, y detalle por clase.
+
+**Cómo verificar:**
+- Ejecutar `python scripts/infer_10cls.py --checkpoint artifacts/best_10cls.pt --pickle src/har/data/Dataset/ucf101_2d_10cls.pkl --out_dir outputs` y revisar las métricas generadas.
+- Abrir `artifacts/training_history_10cls.csv` y verificar columnas `train_loss`, `val_loss`, `val_acc`.
+
+---
+
+## Indicador: Interpreta los resultados de las predicciones de los modelos y los interpreta en el contexto del problema de manera correcta
+**Evidencia:**
+- `docs/REPORT.md` (secciones de análisis):
+  - Identifica clases débiles (ej. clase 5 con recall bajo) y propone ajustar pesos o recolectar más datos.
+  - Analiza trade-offs precisión/recall y su impacto en la tarea de reconocimiento de actividades.
+- `Notebooks/dataExperiments_10cls.ipynb` (celdas finales): conclusiones sobre qué clases confunden más y por qué.
+- `artifacts/per_class_metrics_CE_10cls.csv`: soporte numérico para la interpretación.
+
+**Cómo verificar:**
+- Leer las conclusiones en `docs/REPORT.md` y contrastar con la matriz de confusión.
+- Revisar en el notebook las celdas de interpretación y las visualizaciones por clase.
+
+
+# Estructura del Repositorio
 
 ```
 Human-Activity-Recognition_UCF101/
@@ -429,142 +478,6 @@ python scripts/infer_10cls.py \
 | Speedup AMP | 1.5x más rápido | Framework moderno (indicador 1) |
 
 ---
-
-## Archivos Clave para Evaluación de Indicadores
-
-**Para evaluador: revisar en este orden**
-
-1. **Indicador 1 (Framework IA):** 
-   - `src/har/Models/lstm_model.py` (líneas 1-60)
-   - `scripts/train_10cls.py` (líneas 85-150)
-
-2. **Indicador 2 (Evaluación y ajustes):** 
-   - `Notebooks/dataExperiments_10cls.ipynb` (Celdas 6-10)
-   - `docs/REPORT.md` (Sección 4.3 — tabla comparativa)
-
-3. **Indicador 3 (Datos reales):** 
-   - `src/har/data/Dataset/ucf101_2d_10cls.pkl` (verificable con pickle.load)
-   - `Notebooks/dataExperiments_10cls.ipynb` (Celda 3 — verificación estructura)
-
-4. **Indicador 4 (Predicciones):** 
-   - `scripts/infer_10cls.py` (líneas 85-145)
-   - Output: `artifacts/predictions.csv` + `per_class_metrics_inference.csv`
-
-5. **Indicador 5 (Estocástico vs. Determinista):** 
-   - `docs/REPORT.md` (Sección 5 — análisis del problema)
-   - `Notebooks/dataExperiments_10cls.ipynb` (Celda 1 — justificación)
-
-6. **Indicador 6 (Selección de modelo):** 
-   - `docs/REPORT.md` (Sección 9.3 — tabla de alternativas)
-   - `src/har/Models/lstm_model.py` (líneas 1-15 — justificación en comentarios)
-
-7. **Indicador 7 (Ventajas/Desventajas):** 
-   - `docs/REPORT.md` (Secciones 3 y 9)
-   - `Notebooks/dataExperiments_10cls.ipynb` (Celda 10 — conclusiones)
-
----
-
-## Indicadores Adicionales Detectados (Otras Subcompetencias)
-
-Durante el desarrollo del proyecto, se han identificado indicadores de competencias adicionales que **aún no están formalmente agregados al README**, pero se demuestran en el código:
-
-### **Potencial SMA0402 - Herramientas para procesamiento del lenguaje natural**
-*No aplica directamente (este proyecto es visión, no NLP). Podría adaptarse si se agregara análisis de nombres de acciones con IA.*
-
-### **Potencial SMA0101 - Construcción de modelos estocásticos/deterministas**
-**Evidencia identificada:**
-- Análisis formal de si el problema es estocástico o determinista → `docs/REPORT.md` (Sección 5)
-- Justificación de uso de `CrossEntropyLoss` (modelo probabilístico) → `scripts/train_10cls.py`
-- Matriz de confusión y análisis estadístico → `Notebooks/dataExperiments_10cls.ipynb` (Celda 10)
-
-**Recomendación:** Si SMA0101 es requisito, formalizar esta sección en README.
-
-### **Potencial SMA0400 - Métodos cognitivos/optimización**
-**Evidencia identificada:**
-- Selección de hiperparámetros (learning rate, batch size, dropout) → `docs/REPORT.md` (Sección 4)
-- Técnica de class weighting para balanceo → `scripts/train_10cls.py` (líneas 110-120)
-- AMP (Automatic Mixed Precision) para optimización → `scripts/train_10cls.py` (líneas 140-145)
-- Checkpointing del mejor modelo → `scripts/train_10cls.py` (línea 165)
-
-**Recomendación:** Si necesitas demostrar SMA0400, profundizar en sección de optimización.
-
-### **Competencias Transversales Detectadas (No de SMA)**
-Aunque no son del catálogo SMA0401, el proyecto demuestra:
-
-| Competencia | Evidencia | Ubicación |
-|-------------|-----------|-----------|
-| **Programación Orientada a Objetos** | Clases: `SkeletonLSTM`, `UCFSkeletonDataset`, `NormalizeKeypoints` | `src/har/Models/lstm_model.py`, `Notebooks/dataExperiments_10cls.ipynb` |
-| **Reproducibilidad (DevOps)** | Seeds fijos, stratificación, argparse en scripts | `scripts/train_10cls.py`, `Notebooks/dataExperiments_10cls.ipynb` (Celda 1) |
-| **Documentación técnica** | Docstrings, comentarios inline, REPORT.md extenso | `src/har/Models/lstm_model.py`, `docs/REPORT.md` |
-| **Análisis de datos** | EDA, visualizaciones, métricas por clase | `Notebooks/dataExperiments_10cls.ipynb` (Celdas 3-7) |
-| **Control de versiones** | Git workflow, commits lógicos | `.gitignore`, commits en repo |
-| **Scripting y CLI** | Argparse, logging, interfaz de línea de comandos | `scripts/train_10cls.py`, `scripts/infer_10cls.py` |
-
----
-
-## Cómo Evaluar Este Portafolio
-
-### Para Evaluador de SMA0401
-
-1. **Inicio recomendado:**
-   - Leer sección "Indicadores de Competencia SMA0401" (arriba).
-   - Revisar tabla "Archivos Clave para Evaluación" (abajo).
-
-2. **Verificación en código:**
-   - Cada indicador tiene referencias exactas a líneas/celdas.
-   - Ejecutar notebooks o scripts para confirmar funcionalidad.
-
-3. **Evaluación del desempeño:**
-   - Métricas finales: 62.9% accuracy (vs. 10% baseline aleatorio).
-   - Mejora iterativa: 58% → 62.9% (ajustes validados).
-   - Reproducibilidad: Mismos resultados con seeds fijos.
-
-### Rúbrica de Evaluación Sugerida
-
-| Indicador | Esperado | Demostrado | Evidencia |
-|-----------|----------|-----------|-----------|
-| **SMA0401-1** | Usa framework IA |  Sí | PyTorch LSTM, AMP, DataLoader |
-| **SMA0401-2** | Evalúa y ajusta modelo | Sí | Baseline 58% → Avanzado 62.9% |
-| **SMA0401-3** | Usa datos reales | Sí | UCF101 reales, 283 muestras |
-| **SMA0401-4** | Genera predicciones | Sí | predictions.csv, per_class_metrics.csv |
-| **SMA0401-5** | Identifica tipo de modelo | Sí | Análisis estocástico en REPORT.md |
-| **SMA0401-6** | Selecciona modelo adecuado | Sí | LSTM vs. CNN/GRU/Transformer |
-| **SMA0401-7** | Explica ventajas/desventajas | Sí | Secciones 3 y 9 de REPORT.md |
-
----
-
-## Dudas Frecuentes de Evaluación
-
-**P: ¿Cómo verifico que usó datos reales?**  
-R: Descargar y ejecutar:
-```python
-import pickle
-with open('src/har/data/Dataset/ucf101_2d_10cls.pkl', 'rb') as f:
-    data = pickle.load(f)
-print(f"Muestras reales cargadas: {len(data['annotations'])}")
-print(f"Primera anotación: {data['annotations'][0].keys()}")
-```
-
-**P: ¿Puedo reproducir el entrenamiento exacto?**  
-R: Sí, ejecutar:
-```powershell
-python scripts/train_10cls.py --epochs 20 --batch_size 8 --use_amp --num_workers 0
-```
-Obtendrás val_acc ≈ 0.629 (variación <1% por hardware).
-
-**P: ¿Dónde están las métricas de evaluación?**  
-R: 
-- Globales: `artifacts/per_class_metrics_CE_10cls.csv`
-- Historial: `artifacts/training_history_10cls.csv`
-- Análisis: `docs/REPORT.md` (Secciones 5 y 6)
-
-**P: ¿Hay otras competencias demostradas?**  
-R: Sí, ver sección "Indicadores Adicionales Detectados" (arriba). Principales:
-- SMA0101 (Modelos estadísticos) — análisis estocástico/determinista
-- SMA0400 (Métodos cognitivos) — optimización de hiperparámetros
-
----
-
 ## Referencias Bibliográficas
 
 - UCF101 Dataset: [https://www.crcv.ucf.edu/data/UCF101.php](https://www.crcv.ucf.edu/data/UCF101.php)
